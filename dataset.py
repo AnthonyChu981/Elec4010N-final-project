@@ -1,9 +1,11 @@
 import torch
+import tensorflow as tf
 import h5py
 from torch.utils.data import Dataset
 from torchvision import transforms
 from transforms import RandomCrop, CenterCrop, RandomRotFlip, ToTensor
 from torch.utils.data import DataLoader
+import numpy as np
 
 class LAHeart(Dataset):
     """ LA Dataset """
@@ -28,6 +30,7 @@ class LAHeart(Dataset):
     def __getitem__(self, idx):
         image_name = self.image_list[idx]
         h5f = h5py.File(self._base_dir+"2018LA_Seg_Training Set/"+image_name+"/mri_norm2.h5", 'r')
+        #print(self._base_dir+"2018LA_Seg_Training Set/"+image_name+"/mri_norm2.h5")
         image = h5f['image'][:]
         label = h5f['label'][:]
         sample = {'image': image, 'label': label}
@@ -36,18 +39,24 @@ class LAHeart(Dataset):
 
         return sample
 
+'''
 train_data_path = './data/'
 patch_size = (112, 112, 80)
 batch_size = 4
 
 if __name__ == '__main__':
     db_train = LAHeart(base_dir=train_data_path, 
-                split='test',
-                num=16,
+                split='train',
                 transform = transforms.Compose([
                             RandomRotFlip(),
                             RandomCrop(patch_size),
                             ToTensor(),
                             ]))
-
-    trainloader = DataLoader(db_train, batch_size=batch_size, shuffle=True,  num_workers=4, pin_memory=True)
+    for i in range(len(db_train)):
+        get_item = LAHeart.__getitem__(db_train, 0)
+        get_item['label'] = get_item['label'].numpy()
+        zeros = np.count_nonzero(get_item['label'])
+        #print(zeros)
+        if zeros != 0:
+            print(i)
+'''
