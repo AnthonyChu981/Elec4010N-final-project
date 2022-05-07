@@ -56,33 +56,33 @@ class UpsamplingConvBlock(nn.Module):
 
 class UNet(nn.Module):
     def __init__(self, n_channels=1, n_classes=2, n_filters=16):
-        super(UNet, self).__init__()
+        super().__init__()
         self.block_1 = ConvBlock(1, n_channels, n_filters)
         self.block_1_dw = DownsamplingConvBlock(n_filters, 2 * n_filters)
 
-        self.block_2 = ConvBlock(1, n_channels, n_filters)
+        self.block_2 = ConvBlock(2, n_filters * 2, n_filters * 2)
         self.block_2_dw = DownsamplingConvBlock(n_filters * 2, n_filters * 4)
 
-        self.block_3 = ConvBlock(1, n_channels, n_filters)
+        self.block_3 = ConvBlock(3, n_filters * 4, n_filters * 4)
         self.block_3_dw = DownsamplingConvBlock(n_filters * 4, n_filters * 8)
 
-        self.block_4 = ConvBlock(1, n_channels, n_filters)
+        self.block_4 = ConvBlock(3, n_filters * 8, n_filters * 8)
         self.block_4_dw = DownsamplingConvBlock(n_filters * 8, n_filters * 16)
 
-        self.block_5 = ConvBlock(1, n_channels, n_filters)
+        self.block_5 = ConvBlock(3, n_filters * 16, n_filters * 16)
         self.block_5_up = UpsamplingConvBlock(n_filters * 16, n_filters * 8)
 
-        self.block_6 = ConvBlock(1, n_channels, n_filters)
+        self.block_6 = ConvBlock(3, n_filters * 8, n_filters * 8)
         self.block_6_up = UpsamplingConvBlock(n_filters * 8, n_filters * 4)
 
-        self.block_7 = ConvBlock(1, n_channels, n_filters)
+        self.block_7 = ConvBlock(3, n_filters * 4, n_filters * 4)
         self.block_7_up = UpsamplingConvBlock(n_filters * 4, n_filters * 2)
 
-        self.block_8 = ConvBlock(1, n_channels, n_filters)
+        self.block_8 = ConvBlock(2, n_filters * 2, n_filters * 2)
         self.block_8_up = UpsamplingConvBlock(n_filters * 2, n_filters)
 
-        self.block_9 = ConvBlock(1, n_channels, n_filters)
-        self.out_conv = nn.Conv3d(n_filters, n_classes,1 , padding = 0)
+        self.block_9 = ConvBlock(1, n_filters, n_filters)
+        self.out_conv = nn.Conv3d(n_filters, n_classes, 1, padding = 0)
 
         self.dropout = nn.Dropout3d(p=0.5, inplace=False)
 
@@ -90,16 +90,16 @@ class UNet(nn.Module):
         x1 = self.block_1(input)
         x1_dw = self.block_1_dw(x1)
         
-        x2 = self.block_1(x1_dw)
-        x2_dw = self.block_1_dw(x2)
+        x2 = self.block_2(x1_dw)
+        x2_dw = self.block_2_dw(x2)
 
-        x3 = self.block_1(x2_dw)
-        x3_dw = self.block_1_dw(x3)
+        x3 = self.block_3(x2_dw)
+        x3_dw = self.block_3_dw(x3)
 
-        x4 = self.block_1(x3_dw)
-        x4_dw = self.block_1_dw(x4)
+        x4 = self.block_4(x3_dw)
+        x4_dw = self.block_4_dw(x4)
 
-        x5 = self.block_1(x4_dw)
+        x5 = self.block_5(x4_dw)
         return (x1, x2, x3, x4, x5)
 
     def decoder(self, features):
